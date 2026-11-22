@@ -1,0 +1,5 @@
+/* Captures d'écran de l'application : un léger cadre les distingue des figures calculées */
+.capture img, img.capture { border: 1px solid #d0d7de; border-radius: 4px; }
+.callout { border-radius: .4rem; }
+figure.figure img { max-width: 100%; }
+table { margin-bottom: 1.2rem; }

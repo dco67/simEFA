@@ -1,0 +1,29 @@
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{graphicx}
+% Numéros sans point final : « Figure 1.1 : »
+\KOMAoptions{numbers=noenddot}
+% Numéros de sections à deux chiffres dans la table des matières
+\RedeclareSectionCommand[tocnumwidth=2.9em]{section}
+\RedeclareSectionCommand[tocindent=2.9em,tocnumwidth=3.4em]{subsection}
+% Caractères absents de Latin Modern hors formules
+\usepackage{newunicodechar}
+\newunicodechar{▸}{\ensuremath{\blacktriangleright}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{Φ}{\ensuremath{\Phi}}
+\newunicodechar{φ}{\ensuremath{\phi}}
+\newunicodechar{ω}{\ensuremath{\omega}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{√}{\ensuremath{\surd}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{×}{\ensuremath{\times}}
+% La couverture (cover.tex) tient lieu de page de titre
+\renewcommand{\maketitle}{}

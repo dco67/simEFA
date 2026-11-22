@@ -1,0 +1,89 @@
+project:
+  type: book
+  output-dir: _book
+
+lang: fr
+language:
+  crossref-fig-title: "Figure"
+  crossref-tbl-title: "Tableau"
+  crossref-fig-prefix: "figure"
+  crossref-tbl-prefix: "tableau"
+  crossref-eq-prefix: "équation"
+  crossref-ch-prefix: "chapitre"
+  crossref-sec-prefix: "section"
+  callout-tip-title: "Astuce"
+  callout-note-title: "Note"
+  callout-warning-title: "Attention"
+  callout-important-title: "Important"
+
+book:
+  title: "Analyse factorielle exploratoire"
+  subtitle: "Manuel d’accompagnement de l’application simEFA"
+  author: "Daniel Coulombe"
+  date: "2026"
+  search: true
+  page-navigation: true
+  chapters:
+    - index.qmd
+    - 01-comprendre-afe.qmd
+    - 02-preparer-donnees.qmd
+    - 03-decider-facteurs.qmd
+    - 04-extraire-tourner.qmd
+    - 05-interpreter-solution.qmd
+    - 06-stabilite-fiabilite.qmd
+    - 07-validation-cfa.qmd
+    - 08-exercice-guide.qmd
+    - 09-glossaire.qmd
+    - 10-canevas-rapport.qmd
+    - references.qmd
+  downloads:
+    - pdf
+    - epub
+
+bibliography: references.bib
+csl: apa.csl
+
+crossref:
+  chapters: true
+
+execute:
+  echo: false
+  warning: false
+  message: false
+  freeze: auto
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    toc-location: right
+    toc-title: "Table des matières"
+    toc-depth: 3
+    number-sections: true
+    smooth-scroll: true
+    link-external-newwindow: true
+    fig-align: center
+  pdf:
+    documentclass: scrreprt
+    pdf-engine: lualatex
+    toc: true
+    toc-depth: 2
+    toc-title: "Table des matières"
+    number-sections: true
+    colorlinks: true
+    fig-align: center
+    include-in-header: preamble.tex
+    include-before-body: cover.tex
+    geometry:
+      - top=25mm
+      - bottom=25mm
+      - left=28mm
+      - right=28mm
+  epub:
+    number-sections: true
+    cover-image: cover.png
+    css: styles.css
+    toc: true
+    toc-depth: 2
+    toc-title: "Table des matières"

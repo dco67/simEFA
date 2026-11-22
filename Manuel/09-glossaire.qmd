@@ -1,0 +1,55 @@
+# Glossaire {#sec-glossaire}
+
+| Terme | Définition utile |
+|:--|:--|
+| **AFE** | Analyse factorielle exploratoire : recherche une structure de facteurs communs à plusieurs variables, chaque item pouvant charger sur chaque facteur. |
+| **ACP** | Analyse en composantes principales : résume la variance **totale** des variables; ses composantes ne sont pas des facteurs latents. |
+| **Alignement** | Mise en correspondance de l’ordre et du signe des facteurs de deux solutions avant de les comparer (bootstrap, population simulée). |
+| **Alpha de Cronbach** | Indice de cohérence interne d’un score total qui suppose des items de même charge (modèle tau-équivalent). |
+| **Analyse parallèle** | Comparaison des valeurs propres observées avec celles de données aléatoires de même taille; on retient les facteurs qui dépassent le hasard. |
+| **Bartlett (test de)** | Test de l’hypothèse d’une matrice de corrélation identité (aucune corrélation entre items). |
+| **Bootstrap** | Rééchantillonnage des personnes avec remise, servant ici à étudier la variabilité des charges. |
+| **CFA** | Analyse factorielle confirmatoire : évalue un modèle de mesure défini à l’avance, dans lequel les charges jugées absentes sont fixées à zéro. |
+| **Charge factorielle** | Relation estimée entre un item et un facteur. Dans ce manuel, les charges présentées sont standardisées. |
+| **Charge croisée** | Relation notable d’un item avec plus d’un facteur, sans écart net entre ses deux meilleures charges. |
+| **Communalité (h²)** | Proportion de variance d’un item expliquée par l’ensemble des facteurs retenus. |
+| **Congruence de Tucker** | Indice de ressemblance entre deux colonnes de charges (1 = identiques); sert à comparer une solution estimée à la population. |
+| **Déterminant** | Résumé de la redondance d’une matrice de corrélation : 1 si les items sont indépendants, proche de 0 si certains sont presque des combinaisons des autres. |
+| **Éboulis** | Graphique des valeurs propres ordonnées; on y cherche une cassure. |
+| **Facteur de méthode** | Facteur qui reflète une caractéristique de la mesure (formulation négative, format) plutôt qu’un construit. |
+| **Heywood (cas de)** | Solution impropre : unicité estimée négative, charge standardisée supérieure à 1. |
+| **Indice de modification** | Diminution attendue du $\chi^2$ d’une CFA si l’on libérait un paramètre fixé. |
+| **KMO** | Indice de Kaiser-Meyer-Olkin : compare corrélations simples et corrélations partielles; proche de 1 lorsque des facteurs communs expliquent les corrélations. |
+| **Matrice de patrons** | Dans une solution oblique, coefficients de régression des items sur les facteurs (contributions propres). |
+| **Matrice de structure** | Dans une solution oblique, corrélations entre items et facteurs : $S=P\Phi$. |
+| **MSA** | Indice KMO calculé pour un seul item. |
+| **Oblimin** | Rotation oblique : les facteurs peuvent corréler. |
+| **Oméga de McDonald** | Fiabilité d’un score total fondée sur les charges d’un modèle à un facteur (congénérique). |
+| **Règle de Kaiser** | Retenir les valeurs propres (matrice complète) supérieures à 1; surestime le nombre de facteurs avec beaucoup d’items. |
+| **Rotation** | Réorientation des axes factoriels afin de faciliter une structure simple; elle ne change pas l’ajustement. |
+| **Structure simple** | Configuration où chaque item charge fortement sur un seul facteur. |
+| **Unicité (ψ)** | Part de la variance d’un item qui lui est propre : $1-h^2$. |
+| **Validité** | Degré auquel les interprétations et usages d’un score sont soutenus par des preuves. |
+| **Valeur propre** | Quantité de variance associée à une dimension de la matrice de corrélation (complète ou réduite). |
+| **Varimax** | Rotation orthogonale : les facteurs sont imposés non corrélés. |
+
+: Glossaire. {#tbl-glossaire}
+
+## Du manuel à l’écran {.unnumbered}
+
+| Dans le manuel | Dans simEFA |
+|:--|:--|
+| Situation, graine, charges, corrélation entre facteurs | **Importation des données ▸ Données simulées** |
+| Jeux de données réels | **Importation des données ▸ Données classiques** |
+| Inversion d’items | **Préparation des items** |
+| Charges vraies d’une simulation | **Aperçu des données ▸ Population simulée** |
+| Matrice de corrélation, descriptifs, valeurs manquantes | **Aperçu des données ▸ Statistiques descriptives** |
+| Bartlett, déterminant, KMO, éboulis, analyse parallèle | **Analyse factorielle ▸ Tests préliminaires** |
+| Extraction, rotation, nombre de facteurs | **Paramètres de l’analyse** |
+| Solutions voisines | **Analyse factorielle ▸ Comparaison des modèles** |
+| Alpha et oméga | **Analyse factorielle ▸ Fiabilité des facteurs** |
+| Charges, statuts, patrons et structure, communalités | **Interprétation** (sous-onglets 1 à 5) |
+| Intervalles bootstrap | **Bootstrap** |
+| Syntaxe, ajustement, indices de modification | **Validation CFA** |
+
+: Correspondance entre le manuel et l’application. {#tbl-ecran}

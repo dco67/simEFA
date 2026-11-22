@@ -1,0 +1,101 @@
+# Laboratoire guidé : de la simulation à la CFA {#sec-labo}
+
+```{r}
+#| include: false
+source("_common.R")
+d <- simuler("correlated", n = 200); R <- cor(d)
+kmo <- psych::KMO(R)$MSA; bart <- psych::cortest.bartlett(R, n = 200); dt <- det(R)
+pa <- parallele(d)
+a <- suppressWarnings(ajuster_afe(d, 2, "oblimin", "ML"))
+st <- summarise_simple_structure(a$loadings, a$communality)
+fiab <- sapply(list(paste0("X", 1:4), paste0("X", 5:8)), function(it) omega_sous_echelle(d[, it])$omega)
+x <- simuler("cross", n = 200); b <- suppressWarnings(ajuster_afe(x, 2, "oblimin", "ML"))
+stx <- summarise_simple_structure(b$loadings, b$communality)
+p <- SCENARIOS$correlated
+v <- generate_efa_simulation(200, 2, 4, p$main, p$cross, p$prop, p$noise, TRUE, p$corr, 1235,
+                             loading_pattern = attr(d, "loading_pattern"))
+cf <- lavaan::cfa(convert_efa_to_cfa(a, .30, "primary"), data = v, std.lv = TRUE, estimator = "MLR")
+fi <- lavaan::fitMeasures(cf, c("chisq.scaled", "df", "pvalue.scaled", "cfi.robust", "tli.robust", "rmsea.robust", "srmr"))
+```
+
+Cet exercice reprend le parcours complet. Il privilégie la justification des décisions plutôt que la recherche du « bon » nombre écrit à l’avance. Les résultats attendus, repliés après chaque partie, correspondent à la graine 1234; avec une autre graine, les nombres changent, mais le raisonnement reste le même.
+
+## Situation
+
+Vous développez un court questionnaire comportant deux dimensions théoriquement liées. Vous souhaitez savoir si les items récupèrent cette organisation, si certains items sont ambigus et si la structure tient dans un nouvel échantillon.
+
+## Partie A : créer une situation contrôlée
+
+Dans **Importation des données ▸ Données simulées** :
+
+1. choisissez **Facteurs corrélés**;
+2. ramenez le **Nombre d’observations** à 200 (deux facteurs et quatre items par facteur sont déjà réglés);
+3. gardez la graine proposée (1234) et cliquez sur **Générer**;
+4. notez les réglages de charges (0,65), de bruit (1) et de corrélation entre facteurs (0,55).
+
+Pourquoi noter la graine? Elle permet de reproduire exactement la même illustration plus tard. Elle ne rend pas le résultat plus généralisable; elle le rend vérifiable.
+
+## Partie B : préparer une décision
+
+Dans **Aperçu des données**, observez la matrice de corrélation et les distributions. Passez ensuite à **Analyse factorielle ▸ Tests préliminaires**.
+
+Répondez par une phrase complète à chacune des questions suivantes :
+
+- Les corrélations paraissent-elles présenter des regroupements plausibles?
+- Que suggèrent KMO, Bartlett et le déterminant, sans les transformer en permis automatique?
+- Combien de facteurs l’analyse parallèle suggère-t-elle?
+- Quelles solutions voisines méritent d’être comparées?
+
+::: {.callout-note collapse="true" title="Résultats attendus (partie B)"}
+Deux blocs se dessinent (X1 à X4, X5 à X8), mais moins nettement que dans le cas fil rouge, parce que les deux facteurs sont fortement corrélés : les corrélations entre blocs sont elles aussi substantielles. KMO = `r fr(kmo, 3)`, Bartlett $\chi^2(`r bart$df`)=`r frm(bart$chisq, 1)`$, $p<0{,}001$, déterminant = `r fr(dt, 3)` : la matrice se prête à une AFE et ne présente pas de redondance extrême. L’analyse parallèle sur la matrice réduite suggère `r pa$sugg_fa` facteurs, la règle de Kaiser aussi (`r pa$kaiser`). Remarquez que l’analyse parallèle en vue ACP n’en suggère que `r pa$sugg_pc` : quand deux facteurs sont très corrélés, la seconde composante se distingue mal du hasard. Les solutions à 1, 2 et 3 facteurs méritent d’être comparées.
+:::
+
+## Partie C : extraire et interpréter
+
+Dans **Paramètres de l’analyse**, choisissez toutes les variables simulées, retenez deux facteurs et utilisez Oblimin. Exécutez l’analyse.
+
+Consultez ensuite **Interprétation** dans l’ordre des sous-onglets. Pour chaque item, classez son état : clairement associé, ambigu, faible ou à discuter. Nommez les deux facteurs seulement après cette classification. Vérifiez les communalités et la corrélation entre facteurs.
+
+Rédigez un court paragraphe de résultats qui précise l’extraction, la rotation, la décision de retenir deux facteurs et le contenu des facteurs. Signalez explicitement toute ambiguïté.
+
+::: {.callout-note collapse="true" title="Résultats attendus (partie C)"}
+Les huit items sont à structure simple : X1 à X4 sur un facteur (charges de `r fr(min(a$loadings[1:4, 1]))` à `r fr(max(a$loadings[1:4, 1]))`), X5 à X8 sur l’autre (`r fr(min(a$loadings[5:8, 2]))` à `r fr(max(a$loadings[5:8, 2]))`). Les communalités vont de `r fr(min(a$communality))` à `r fr(max(a$communality))`; X3 et X7 sont les items les moins bien représentés. La corrélation entre facteurs est estimée à `r fr(a$factor_correlation[1, 2])` (population : 0,55). Un paragraphe possible :
+
+> Une AFE (maximum de vraisemblance, rotation Oblimin) a été réalisée sur les huit items ($n=200$). L’analyse parallèle et l’examen des solutions voisines ont conduit à retenir deux facteurs. Les items X1 à X4 définissent le premier facteur (charges de `r fr(min(a$loadings[1:4, 1]))` à `r fr(max(a$loadings[1:4, 1]))`), les items X5 à X8 le second (`r fr(min(a$loadings[5:8, 2]))` à `r fr(max(a$loadings[5:8, 2]))`); aucune charge secondaire n’atteint 0,30. Les deux facteurs sont fortement corrélés (`r fr(a$factor_correlation[1, 2])`), ce qui justifie la rotation oblique et invite à vérifier qu’ils représentent bien deux construits distincts.
+:::
+
+## Partie D : mettre à l’épreuve la conclusion
+
+Lancez le bootstrap avec au moins 200 rééchantillonnages. Choisissez un item très net et un item plus hésitant. Décrivez ce que les intervalles de charges changent (ou ne changent pas) dans votre confiance envers la solution.
+
+Ensuite, modifiez seulement la situation pour **Items ambigus (charges croisées)** (ramenez de nouveau le nombre d’observations à 200, puisque le choix d’une situation rétablit ses réglages). Reprenez l’AFE avec le même nombre de facteurs. Quel tableau semble plus facile à nommer? Cette facilité correspond-elle à une meilleure mesure ou seulement à une structure plus simple?
+
+::: {.callout-note collapse="true" title="Résultats attendus (partie D)"}
+Avec 200 personnes, les intervalles bootstrap des charges principales sont nettement plus larges que dans le cas fil rouge (300 personnes, charges 0,70), et la colonne **Par rapport au seuil** indique les items dont la force reste incertaine : c’est là que la confiance doit être nuancée. Dans la situation **Items ambigus**, l’item X1 devient une charge croisée (`r fr(stx$Charge_principale[1])` et `r fr(stx$Seconde_charge[1])`), et X7 a une seconde charge juste sous le seuil (`r fr(stx$Seconde_charge[7])`). La population confirme que X1, X7 et X8 ont une seconde charge de 0,30. Le tableau des **Facteurs corrélés** est plus facile à nommer, mais ce n’est pas une question de qualité de mesure : les items ambigus mesurent réellement deux choses. La bonne réponse n’est pas de les supprimer automatiquement, mais de relire leur contenu.
+:::
+
+## Partie E : confirmer sur de nouvelles données
+
+Revenez à la situation **Facteurs corrélés** (200 observations, graine 1234) et obtenez une AFE propre. Ouvrez **Validation CFA** :
+
+1. générez un nouvel échantillon avec une graine différente (1235);
+2. générez la syntaxe CFA;
+3. lisez la syntaxe comme une hypothèse de mesure;
+4. évaluez le modèle;
+5. interprétez l’ensemble des indices avant d’ouvrir les indices de modification.
+
+Terminez par deux phrases : qu’est-ce qui est confirmé dans ce nouvel échantillon simulé? Qu’est-ce qui exigerait encore une collecte réelle ou une validation indépendante?
+
+::: {.callout-note collapse="true" title="Résultats attendus (partie E)"}
+La syntaxe proposée est `F1 =~ X1 + X2 + X3 + X4` et `F2 =~ X5 + X6 + X7 + X8`. Sur le nouvel échantillon, $\chi^2(`r fi["df"]`)=`r frm(fi["chisq.scaled"], 1)`$, $p=`r frm(fi["pvalue.scaled"], 3)`$, CFI = `r fr(min(fi["cfi.robust"], 1), 3)`, RMSEA = `r fr(fi["rmsea.robust"], 3)`, SRMR = `r fr(fi["srmr"], 3)` : la structure à deux facteurs corrélés se transporte très bien. Ce qui est confirmé : l’attribution des huit items à deux facteurs, dans une autre réalisation de la même population. Ce qui exige encore une validation réelle : que les items mesurent les construits annoncés (contenu, relations avec d’autres variables), dans une population et un contexte de passation réels.
+:::
+
+::: {.callout-tip collapse="true" title="Pistes de solution (synthèse)"}
+Dans la situation **Facteurs corrélés**, une décision raisonnable consiste généralement à retenir deux facteurs si l’analyse parallèle, l’éboulis et le contenu des items convergent. Oblimin est préférable à Varimax lorsque les construits sont conçus comme liés. Le rapport doit toutefois signaler la corrélation entre facteurs plutôt que de les présenter comme indépendants.
+
+Dans la situation **Items ambigus**, certains items devraient présenter une seconde charge non négligeable. La réponse attendue n’est pas de supprimer automatiquement ces items, mais d’expliquer ce que leur contenu semble mesurer et de dire si une révision ou une validation ultérieure serait nécessaire. Le bootstrap renseigne sur la variabilité interne; la CFA sur un nouvel échantillon simulé renseigne sur le transport de la structure proposée, sans constituer une validation externe réelle.
+:::
+
+::: {.callout-tip title="Prolongement"}
+Refaites l’exercice avec un petit échantillon et des charges plus faibles (situation **Petit échantillon / structure fragile**). Cherchez moins une réponse définitive qu’une compréhension de ce qui rend une décision fragile.
+:::

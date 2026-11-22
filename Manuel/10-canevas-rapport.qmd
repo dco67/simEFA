@@ -1,0 +1,77 @@
+# De la décision au rapport {#sec-rapport}
+
+```{r}
+#| include: false
+source("_common.R")
+hs <- lavaan::HolzingerSwineford1939[, paste0("x", 1:9)]
+R <- cor(hs); kmo <- psych::KMO(R)$MSA; bart <- psych::cortest.bartlett(R, n = 301)
+pa <- parallele(hs)
+h <- suppressWarnings(ajuster_afe(hs, 3, "oblimin", "ML"))
+L <- h$loadings; phi <- h$factor_correlation[upper.tri(h$factor_correlation)]
+```
+
+Une AFE défendable n’est pas seulement un tableau de charges. Elle est une suite de décisions qui doivent pouvoir être relues : quels items ont été retenus, comment ils ont été préparés, quel échantillon a été analysé, pourquoi un certain nombre de facteurs a été choisi et quelles limites demeurent.
+
+## Canevas de décision
+
+Utilisez cette fiche avant de rédiger. Elle transforme les réglages de simEFA en une trace analytique reproductible.
+
+| Étape | Décision à consigner | Où l’observer dans simEFA |
+|---|---|---|
+| Question de mesure | Quel construit ou ensemble cohérent d’items est étudié? | Avant l’importation |
+| Préparation | Quels items ont été inversés? Quelles valeurs manquantes sont présentes? | **Préparation des items** et **Aperçu des données ▸ Résumé et distributions** |
+| Échantillon | Combien de cas étaient disponibles et combien ont été retenus? Un filtre a-t-il été appliqué? | **Aperçu des données** et **Analyse factorielle ▸ Résultats principaux** |
+| Factorabilité | Que suggèrent matrice, KMO, Bartlett et déterminant? | **Analyse factorielle ▸ Tests préliminaires** |
+| Nombre de facteurs | Que suggèrent analyse parallèle, éboulis et solutions voisines? | **Tests préliminaires** et **Comparaison des modèles** |
+| Extraction et rotation | Quelle méthode? Pourquoi une rotation oblique ou orthogonale? | **Paramètres de l’analyse** |
+| Interprétation | Quels items sont nets, faibles ou ambigus? Les facteurs sont-ils corrélés? | **Interprétation** |
+| Stabilité | Que disent fiabilité et bootstrap? | **Fiabilité** et **Bootstrap** |
+| Portée | Qu’exigerait une nouvelle collecte ou une CFA? | **Validation CFA** et discussion finale |
+
+::: {.callout-important title="Un rapport ne cache pas les difficultés"}
+
+Une charge croisée, une communalité faible, un échantillon réduit ou une exclusion importante de cas ne rendent pas une AFE inutile. Ils limitent ce qu’elle permet d’affirmer. Les signaler améliore la crédibilité du rapport.
+:::
+
+## Un modèle de paragraphe de résultats
+
+Adaptez le modèle suivant aux décisions réellement prises. Il est suivi d’une version remplie avec les données de Holzinger et Swineford, telles que les produit simEFA.
+
+> Une analyse factorielle exploratoire a été réalisée sur **[nombre]** items visant **[construit]**. Après **[recodage ou préparation pertinente]**, **[n retenu]** cas complets sur **[n initial]** ont été analysés. La matrice de corrélation et l’indice KMO (**[valeur]**) indiquaient que l’exploration d’une structure commune était envisageable; le test de Bartlett était **[résultat]**. L’analyse parallèle, l’éboulis et l’examen des solutions voisines ont conduit à retenir **[q]** facteurs. Une extraction **[méthode]** avec rotation **[rotation]** a été utilisée. Les facteurs ont été nommés **[nom 1]** et **[nom 2]** à partir des items présentant les charges les plus nettes. **[Nombre]** item(s) présentaient une charge faible ou croisée et ont été conservés / discutés parce que **[justification]**. Les facteurs étaient corrélés à **[valeur]**, ce qui est / n’est pas compatible avec l’interprétation proposée. Ces résultats demeurent exploratoires et devraient être examinés dans un nouvel échantillon.
+
+### Le modèle rempli : Holzinger et Swineford
+
+> Une analyse factorielle exploratoire a été réalisée sur les neuf tests d’aptitudes de Holzinger et Swineford (1939). Aucun recodage n’était nécessaire et les 301 cas étaient complets. La matrice de corrélation et l’indice KMO (`r fr(kmo, 2)`) indiquaient que l’exploration d’une structure commune était envisageable; le test de Bartlett était significatif, $\chi^2(`r bart$df`)=`r frm(bart$chisq, 1)`$, $p<0{,}001$. L’analyse parallèle (`r pa$sugg_fa` facteurs), l’éboulis et l’examen des solutions voisines ont conduit à retenir trois facteurs. Une extraction par maximum de vraisemblance avec rotation Oblimin a été utilisée. Les facteurs ont été nommés *aptitude visuo-spatiale* (x1 à x3), *aptitude verbale* (x4 à x6) et *vitesse de traitement* (x7 à x9) à partir des tests présentant les charges les plus nettes. Le test x9 présentait une charge croisée (`r fr(L["x9", 3])` sur la vitesse, `r fr(L["x9", 1])` sur le facteur visuel) et a été conservé parce que son contenu (discrimination rapide de formes de lettres) relève des deux aptitudes; le test x2 était faiblement représenté ($h^2=`r frm(h$communality["x2"])`$). Les facteurs étaient corrélés de `r fr(min(phi))` à `r fr(max(phi))`, ce qui est compatible avec des aptitudes distinctes mais liées. Ces résultats demeurent exploratoires et devraient être examinés dans un nouvel échantillon.
+
+## Ce qu’il faut présenter dans un tableau
+
+Un tableau final n’a pas besoin d’être énorme. Il devrait présenter les items, leurs charges pertinentes, leur communalité et une indication claire des ambiguïtés.
+
+```{r}
+#| label: tbl-final
+#| tbl-cap: "Holzinger et Swineford : un tableau final compact (ML, Oblimin). Les charges sous 0,30 sont omises, sauf la seconde charge de x9, conservée parce qu'elle est pertinente."
+noms <- c("x1 Perception visuelle", "x2 Cubes", "x3 Losanges", "x4 Paragraphes", "x5 Complétion de phrases",
+          "x6 Sens des mots", "x7 Additions rapides", "x8 Comptage de points", "x9 Majuscules droites/courbes")
+aff <- function(v, garder) ifelse(abs(v) >= .30 | garder, fr(v), "")
+com <- c("", "Faiblement représenté", "", "", "", "", "", "", "Charge croisée à discuter")
+tab <- data.frame(Test = noms,
+                  Visuel = aff(L[, 1], rownames(L) == "x9"), Verbal = aff(L[, 2], FALSE), Vitesse = aff(L[, 3], FALSE),
+                  `h²` = fr(h$communality), Commentaire = com, check.names = FALSE)
+knitr::kable(tab, align = "lrrrrl")
+```
+
+Les seuils de masquage de l’application rendent le tableau plus lisible, mais le rapport doit permettre au lecteur de comprendre les décisions importantes. N’effacez pas une charge secondaire pertinente uniquement parce qu’elle est sous un seuil choisi.
+
+## Checklist finale
+
+Avant de remettre un rapport, vérifiez les questions suivantes :
+
+- Ai-je analysé des items qui appartiennent réellement à une même question de mesure?
+- Ai-je documenté les inversions, exclusions et valeurs manquantes?
+- Ai-je justifié le nombre de facteurs autrement que par une seule règle?
+- Ai-je indiqué l’extraction et la rotation?
+- Ai-je lu les charges, communalités et corrélations entre facteurs ensemble?
+- Ai-je expliqué les items ambigus au lieu de les supprimer automatiquement?
+- Ai-je distingué fiabilité, structure factorielle et validité?
+- Ai-je présenté la solution comme exploratoire lorsque la validation indépendante n’a pas été réalisée?
+

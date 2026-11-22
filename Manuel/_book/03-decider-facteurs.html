@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>3&nbsp; Décider du nombre de facteurs – Analyse factorielle exploratoire</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./04-extraire-tourner.html" rel="next">
+<link href="./02-preparer-donnees.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-9e3e5b9121e68b3f077afb32f2c64d95.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "Pas de résultats",
+    "search-matching-documents-text": "documents trouvés",
+    "search-copy-link-title": "Copier le lien vers la recherche",
+    "search-hide-matches-text": "Cacher les correspondances additionnelles",
+    "search-more-match-text": "correspondance de plus dans ce document",
+    "search-more-matches-text": "correspondances de plus dans ce document",
+    "search-clear-button-title": "Effacer",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Annuler",
+    "search-submit-button-title": "Envoyer",
+    "search-label": "Recherche"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./03-decider-facteurs.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Décider du nombre de facteurs</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Basculer la barre latérale" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Recherche" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Analyse factorielle exploratoire</a> 
+        <div class="sidebar-tools-main">
+    <div class="dropdown">
+      <a href="" title="Download" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Download"><i class="bi bi-download"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="./Analyse-factorielle-exploratoire.pdf">
+              <i class="bi bi-file-pdf pe-1"></i>
+            Download PDF
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="./Analyse-factorielle-exploratoire.epub">
+              <i class="bi bi-journal pe-1"></i>
+            Download ePub
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Recherche"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Préface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-comprendre-afe.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Comprendre ce que cherche une AFE</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-preparer-donnees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Préparer et examiner les données</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-decider-facteurs.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Décider du nombre de facteurs</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-extraire-tourner.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Extraire et tourner une solution</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-interpreter-solution.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Interpréter la solution factorielle</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-stabilite-fiabilite.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Stabilité, fiabilité et prudence</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-validation-cfa.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">De l’AFE à la validation CFA</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-exercice-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Laboratoire guidé : de la simulation à la CFA</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-glossaire.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Glossaire</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-canevas-rapport.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">De la décision au rapport</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Références</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table des matières</h2>
+   
+  <ul>
+  <li><a href="#ce-que-mesure-une-valeur-propre" id="toc-ce-que-mesure-une-valeur-propre" class="nav-link active" data-scroll-target="#ce-que-mesure-une-valeur-propre"><span class="header-section-number">3.1</span> Ce que mesure une valeur propre</a></li>
+  <li><a href="#lanalyse-parallèle-le-point-de-départ-recommandé" id="toc-lanalyse-parallèle-le-point-de-départ-recommandé" class="nav-link" data-scroll-target="#lanalyse-parallèle-le-point-de-départ-recommandé"><span class="header-section-number">3.2</span> L’analyse parallèle : le point de départ recommandé</a></li>
+  <li><a href="#lire-un-éboulis" id="toc-lire-un-éboulis" class="nav-link" data-scroll-target="#lire-un-éboulis"><span class="header-section-number">3.3</span> Lire un éboulis</a></li>
+  <li><a href="#la-règle-de-kaiser-utile-comme-information-rarement-suffisante" id="toc-la-règle-de-kaiser-utile-comme-information-rarement-suffisante" class="nav-link" data-scroll-target="#la-règle-de-kaiser-utile-comme-information-rarement-suffisante"><span class="header-section-number">3.4</span> La règle de Kaiser : utile comme information, rarement suffisante</a></li>
+  <li><a href="#comparer-les-solutions-voisines" id="toc-comparer-les-solutions-voisines" class="nav-link" data-scroll-target="#comparer-les-solutions-voisines"><span class="header-section-number">3.5</span> Comparer les solutions voisines</a></li>
+  <li><a href="#quand-les-indices-ne-concordent-pas" id="toc-quand-les-indices-ne-concordent-pas" class="nav-link" data-scroll-target="#quand-les-indices-ne-concordent-pas"><span class="header-section-number">3.6</span> Quand les indices ne concordent pas</a>
+  <ul class="collapse">
+  <li><a href="#un-facteur-qui-nest-pas-un-construit" id="toc-un-facteur-qui-nest-pas-un-construit" class="nav-link" data-scroll-target="#un-facteur-qui-nest-pas-un-construit"><span class="header-section-number">3.6.1</span> Un facteur qui n’est pas un construit</a></li>
+  </ul></li>
+  <li><a href="#taille-déchantillon-pas-de-chiffre-magique" id="toc-taille-déchantillon-pas-de-chiffre-magique" class="nav-link" data-scroll-target="#taille-déchantillon-pas-de-chiffre-magique"><span class="header-section-number">3.7</span> Taille d’échantillon : pas de chiffre magique</a></li>
+  <li><a href="#laboratoire" id="toc-laboratoire" class="nav-link" data-scroll-target="#laboratoire"><span class="header-section-number">3.8</span> Laboratoire</a></li>
+  <li><a href="#à-retenir" id="toc-à-retenir" class="nav-link" data-scroll-target="#à-retenir"><span class="header-section-number">3.9</span> À retenir</a></li>
+  <li><a href="#quiz" id="toc-quiz" class="nav-link" data-scroll-target="#quiz"><span class="header-section-number">3.10</span> Quiz</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-facteurs" class="quarto-section-identifier"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Décider du nombre de facteurs</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-simple callout-note callout-titled" title="Dans ce chapitre">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Dans ce chapitre
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>comprendre ce qu’est une valeur propre et pourquoi on en compare la grandeur;</li>
+<li>lire un éboulis et une analyse parallèle;</li>
+<li>savoir pourquoi la règle de Kaiser n’est pas un critère de décision;</li>
+<li>comparer des solutions voisines par leur ajustement <strong>et</strong> leur lisibilité;</li>
+<li>reconnaître un facteur de méthode et la fragilité d’une décision avec un petit échantillon.</li>
+</ul>
+</div>
+</div>
+<blockquote class="blockquote">
+<p><strong>Idée centrale.</strong> Ajouter un facteur améliore toujours un peu la reproduction des corrélations. La question n’est donc pas « le facteur suivant explique-t-il quelque chose? », mais « explique-t-il plus que ce que le hasard expliquerait, et correspond-il à un contenu interprétable? ».</p>
+</blockquote>
+<p>Le nombre de facteurs ne se lit pas dans une seule cellule. Cette décision combine une attente théorique, les valeurs propres, l’analyse parallèle, l’éboulis, la clarté de la structure et la possibilité d’interpréter chaque facteur avec des items suffisamment nombreux et cohérents.</p>
+<section id="ce-que-mesure-une-valeur-propre" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="ce-que-mesure-une-valeur-propre"><span class="header-section-number">3.1</span> Ce que mesure une valeur propre</h2>
+<p>Une matrice de corrélation de <span class="math inline">\(p\)</span> items peut être décomposée en <span class="math inline">\(p\)</span> dimensions orthogonales, ordonnées de la plus importante à la moins importante. La <strong>valeur propre</strong> d’une dimension mesure la quantité de variance qu’elle résume. Deux variantes coexistent :</p>
+<ul>
+<li>avec la <strong>matrice complète</strong> (des 1 sur la diagonale, comme en ACP), les <span class="math inline">\(p\)</span> valeurs propres totalisent <span class="math inline">\(p\)</span>; une valeur propre de 3,4 sur 8 items résume l’équivalent de 3,4 items;</li>
+<li>avec la <strong>matrice réduite</strong> (les communalités estimées sur la diagonale, comme en AFE), seule la variance commune est décomposée; les valeurs propres sont plus petites et peuvent devenir négatives au-delà des vrais facteurs.</li>
+</ul>
+<p>Si les items étaient tous indépendants, chaque valeur propre de la matrice complète vaudrait exactement 1. Une structure factorielle se manifeste par quelques valeurs propres nettement plus grandes que les autres.</p>
+</section>
+<section id="lanalyse-parallèle-le-point-de-départ-recommandé" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="lanalyse-parallèle-le-point-de-départ-recommandé"><span class="header-section-number">3.2</span> L’analyse parallèle : le point de départ recommandé</h2>
+<p>L’analyse parallèle compare les valeurs propres observées à celles qui apparaîtraient dans des jeux de données aléatoires de même taille (même nombre de personnes et d’items, mais sans aucun facteur commun). Un facteur est retenu lorsque la valeur propre observée est plus grande que celle attendue par hasard. Cette méthode protège mieux que la règle « valeur propre supérieure à 1 », qui tend à retenir trop de facteurs <span class="citation" data-cites="horn1965 zwick1986">(<a href="references.html#ref-horn1965" role="doc-biblioref">Horn, 1965</a>; <a href="references.html#ref-zwick1986" role="doc-biblioref">Zwick &amp; Velicer, 1986</a>)</span>.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-parallele" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-parallele-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="03-decider-facteurs_files/figure-html/fig-parallele-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:88.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-parallele-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3.1: Éboulis et analyse parallèle (matrice réduite, comme dans simEFA). Points bleus : valeurs propres observées; triangles orange : moyenne de 100 jeux de données aléatoires de même taille. La zone ombrée couvre les facteurs dont la valeur propre dépasse le hasard. À gauche, le cas fil rouge; à droite, la situation fragile (100 personnes, 3 × 3 items, charges 0,50).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Dans simEFA, le graphique de l’analyse parallèle apparaît dans <strong>Analyse factorielle ▸ Tests préliminaires</strong> (<a href="02-preparer-donnees.html#fig-cap-prelim" class="quarto-xref">figure&nbsp;<span>2.3</span></a>). La courbe observée représente la structure des données; la courbe simulée représente le bruit aléatoire comparable. La méthode d’extraction de l’analyse parallèle suit celle choisie pour l’AFE lorsque c’est possible (maximum de vraisemblance ou moindres carrés). Le nombre suggéré correspond aux valeurs propres qui dépassent le hasard <strong>avant le premier croisement</strong> des deux courbes; un dépassement tardif, isolé, ne compte pas.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Cas fil rouge">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Cas fil rouge
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Les deux premières valeurs propres observées (2,78 et 1,00) dépassent nettement celles du hasard (0,64 et 0,18); la troisième (0,00) tombe sous la sienne (0,11). L’analyse parallèle suggère <strong>deux facteurs</strong>, le nombre générateur. Dans la situation fragile, la troisième valeur propre (0,30) dépasse encore son repère aléatoire (0,24), mais de peu : la décision y serait beaucoup moins sûre avec un autre échantillon.</p>
+</div>
+</div>
+<p>Le croisement est un repère, non une injonction à ignorer le contenu des items.</p>
+</section>
+<section id="lire-un-éboulis" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="lire-un-éboulis"><span class="header-section-number">3.3</span> Lire un éboulis</h2>
+<p>Le graphique d’éboulis ordonne les valeurs propres. On cherche une cassure : avant celle-ci, quelques dimensions expliquent nettement plus de variance; après, les gains deviennent modestes et la courbe s’aplatit comme les éboulis au pied d’une falaise (d’où son nom). L’éboulis est utile, mais une cassure peut être floue. Deux personnes raisonnables peuvent ne pas choisir exactement le même endroit.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Dans simEFA">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Astuce</span>Dans simEFA
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Avec la simulation <strong>Structure claire</strong>, générez les données et regardez le graphique de <strong>Tests préliminaires</strong> avant d’ouvrir <strong>Paramètres de l’analyse</strong>. Basculez entre <strong>Valeurs propres de l’AFE</strong> et <strong>Valeurs propres de l’ACP</strong> : la seconde vue ajoute la ligne de la règle de Kaiser. Fixez ensuite le nombre de facteurs demandé, exécutez l’AFE, puis consultez <strong>Comparaison des modèles</strong>. Essayez intentionnellement une solution avec un facteur de moins et une avec un facteur de plus.</p>
+</div>
+</div>
+</section>
+<section id="la-règle-de-kaiser-utile-comme-information-rarement-suffisante" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="la-règle-de-kaiser-utile-comme-information-rarement-suffisante"><span class="header-section-number">3.4</span> La règle de Kaiser : utile comme information, rarement suffisante</h2>
+<p>La règle de Kaiser conserve les valeurs propres de la matrice complète supérieures à 1. Son raisonnement : un facteur devrait résumer au moins autant de variance qu’un seul item. Elle est facile à appliquer, mais sa simplicité est son défaut : elle ignore que, même sans aucun facteur, les valeurs propres d’un <strong>échantillon</strong> fluctuent autour de 1, et que plusieurs dépassent 1 par hasard, d’autant plus qu’il y a d’items et peu de personnes. Utilisez-la éventuellement comme élément descriptif; ne la laissez pas décider seule <span class="citation" data-cites="zwick1986">(<a href="references.html#ref-zwick1986" role="doc-biblioref">Zwick &amp; Velicer, 1986</a>)</span>.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-regles" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-regles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="03-decider-facteurs_files/figure-html/fig-regles-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:88.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-regles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3.2: Proportion d’échantillons simulés (100 par situation) dans lesquels chaque règle retrouve le nombre de facteurs générateur. Questionnaire long : 2 facteurs de 10 items, charges 0,50, 150 personnes. La règle de Kaiser se défend avec peu d’items, mais s’effondre avec un questionnaire long; l’analyse parallèle sur la matrice réduite reste la plus régulière, sans être infaillible quand l’information manque.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>La <a href="#fig-regles" class="quarto-xref">figure&nbsp;<span>3.2</span></a> nuance l’image habituelle. Avec 8 ou 9 items, la règle de Kaiser se tire plutôt bien d’affaire; avec 20 items et 150 personnes, elle ne retrouve dans aucun échantillon les deux facteurs : des valeurs propres d’échantillon dépassent 1 par hasard et elle propose trop de facteurs. L’analyse parallèle sur la matrice réduite, elle, s’adapte au nombre d’items et de personnes (90 % de réussite pour le questionnaire long). Elle n’est pas parfaite pour autant : dans la situation fragile avec 100 personnes, elle ne retrouve les trois facteurs que dans 62 % des échantillons (la règle de Kaiser, 80 %). Quand les charges sont faibles et l’échantillon petit, la troisième valeur propre se distingue mal du hasard, et la version ACP de l’analyse parallèle, plus conservatrice, échoue encore plus souvent. Aucune règle ne crée l’information qu’un échantillon ne contient pas.</p>
+</section>
+<section id="comparer-les-solutions-voisines" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="comparer-les-solutions-voisines"><span class="header-section-number">3.5</span> Comparer les solutions voisines</h2>
+<p>L’onglet <strong>Comparaison des modèles</strong> ajuste automatiquement les solutions de 1 facteur jusqu’au maximum permis (5, ou moins si le modèle ne serait pas identifié) et les présente côte à côte.</p>
+<div id="fig-cap-comparaison" class="capture quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cap-comparaison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/cap-comparaison.png" class="capture img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cap-comparaison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3.3: <strong>Analyse factorielle ▸ Comparaison des modèles</strong> pour le cas fil rouge. La ligne surlignée est la solution retenue; les deux dernières colonnes mesurent la lisibilité de chaque solution.
+</figcaption>
+</figure>
+</div>
+<p>Deux familles d’informations s’y côtoient.</p>
+<p><strong>L’ajustement global.</strong> Le <span class="math inline">\(\chi^2\)</span> teste l’ajustement exact : avec un grand échantillon, il rejette presque toujours. Le CFI et le TLI (près de 1 = bon) comparent le modèle à un modèle d’indépendance; le RMSEA et le SRMR (près de 0 = bon) mesurent l’écart résiduel; le BIC, plus petit = meilleur, pénalise la complexité. Pour le cas fil rouge :</p>
+<div id="tbl-voisines" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-voisines-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tableau&nbsp;3.1: Ajustement des solutions voisines, cas fil rouge.
+</figcaption>
+<div aria-describedby="tbl-voisines-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Facteurs</th>
+<th style="text-align: right;"><span class="math inline">\(\chi^2\)</span></th>
+<th style="text-align: right;">ddl</th>
+<th style="text-align: right;"><span class="math inline">\(p\)</span></th>
+<th style="text-align: right;">CFI</th>
+<th style="text-align: right;">RMSEA</th>
+<th style="text-align: right;">SRMR</th>
+<th style="text-align: right;">BIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1</td>
+<td style="text-align: right;">267,8</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">&lt; 0,001</td>
+<td style="text-align: right;">0,682</td>
+<td style="text-align: right;">0,203</td>
+<td style="text-align: right;">0,139</td>
+<td style="text-align: right;">6 355,6</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2</td>
+<td style="text-align: right;">16,6</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">0,220</td>
+<td style="text-align: right;">0,995</td>
+<td style="text-align: right;">0,030</td>
+<td style="text-align: right;">0,018</td>
+<td style="text-align: right;">6 144,2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: right;">8,2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">0,312</td>
+<td style="text-align: right;">0,998</td>
+<td style="text-align: right;">0,024</td>
+<td style="text-align: right;">0,013</td>
+<td style="text-align: right;">6 170,1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: right;">1,0</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0,617</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,000</td>
+<td style="text-align: right;">0,005</td>
+<td style="text-align: right;">6 191,4</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Le passage de 1 à 2 facteurs transforme un ajustement médiocre (RMSEA 0,203) en un ajustement excellent; au-delà, les gains sont minimes et le BIC remonte. Deux facteurs suffisent.</p>
+<p><strong>La lisibilité.</strong> Les colonnes <strong>Items nets</strong> et <strong>Facteurs bien définis</strong> comptent les items à structure simple et les facteurs qui en ont au moins trois. Avec 3 ou 4 facteurs, le cas fil rouge garde ses 8 items nets, mais seulement deux facteurs bien définis : les facteurs supplémentaires ne sont portés par aucun item. Un facteur que rien ne définit n’est pas une découverte.</p>
+</section>
+<section id="quand-les-indices-ne-concordent-pas" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="quand-les-indices-ne-concordent-pas"><span class="header-section-number">3.6</span> Quand les indices ne concordent pas</h2>
+<p>L’absence d’accord est une information. Elle peut signaler un facteur faible, des facteurs corrélés, des items trop peu nombreux, une structure complexe ou un échantillon insuffisant. La réponse n’est pas de choisir l’option qui produit le plus beau tableau.</p>
+<p>Une démarche défendable est la suivante :</p>
+<ol type="1">
+<li>commencer par le nombre proposé par l’analyse parallèle;</li>
+<li>examiner les solutions voisines (un facteur de moins, un de plus);</li>
+<li>demander si chaque facteur est défini par plusieurs items interprétables;</li>
+<li>vérifier s’il existe des facteurs artificiels de deux items, des charges croisées massives ou des résidus conceptuels;</li>
+<li>retenir et expliquer la solution la plus parcimonieuse qui reste substantivement crédible.</li>
+</ol>
+<section id="un-facteur-qui-nest-pas-un-construit" class="level3" data-number="3.6.1">
+<h3 data-number="3.6.1" class="anchored" data-anchor-id="un-facteur-qui-nest-pas-un-construit"><span class="header-section-number">3.6.1</span> Un facteur qui n’est pas un construit</h3>
+<div class="callout callout-style-default callout-note callout-titled" title="Exemple réel : Rosenberg, une fois les items inversés">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Exemple réel : Rosenberg, une fois les items inversés
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>L’échelle de Rosenberg est conçue pour mesurer <strong>une</strong> estime de soi. Pourtant, après l’inversion des items négatifs, l’analyse parallèle sur la matrice réduite suggère 2 facteurs (et 1 composante en ACP). La solution à deux facteurs sépare presque parfaitement les items formulés positivement et les items formulés négativement, avec une corrélation de 0,65 entre les deux facteurs.</p>
+</div>
+</div>
+<p>Le second facteur ne mesure pas un autre construit : il reflète la <strong>formulation</strong> des items (une partie des répondants réagit différemment aux énoncés négatifs). C’est un <strong>facteur de méthode</strong>. La théorie, le contenu des items et la forte corrélation entre facteurs plaident ici pour un construit unique accompagné d’un effet de formulation, que l’on modéliserait explicitement en CFA (chapitre <a href="07-validation-cfa.html" class="quarto-xref"><span>7</span></a>). Un critère statistique ne pouvait pas le dire seul.</p>
+</section>
+</section>
+<section id="taille-déchantillon-pas-de-chiffre-magique" class="level2" data-number="3.7">
+<h2 data-number="3.7" class="anchored" data-anchor-id="taille-déchantillon-pas-de-chiffre-magique"><span class="header-section-number">3.7</span> Taille d’échantillon : pas de chiffre magique</h2>
+<p>Les règles telles que « dix participants par item » peuvent servir de mise en garde, mais elles ne suffisent pas. La précision dépend aussi de la force des charges, du nombre d’items par facteur, du nombre de facteurs et de la complexité de la structure <span class="citation" data-cites="macCallum1999">(<a href="references.html#ref-macCallum1999" role="doc-biblioref">MacCallum et al., 1999</a>)</span>. Un facteur défini par plusieurs charges fortes est plus facile à récupérer qu’un facteur défini par trois charges faibles, même avec le même ratio participants/items. La <a href="#fig-regles" class="quarto-xref">figure&nbsp;<span>3.2</span></a> l’illustre : la situation fragile, avec 100 personnes pour 9 items (plus de 10 par item), reste incertaine.</p>
+<div class="callout callout-style-default callout-warning callout-titled" title="Décision fragile">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Attention</span>Décision fragile
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Un résultat non significatif, une solution qui change de forme ou un facteur mal défini ne sont pas des échecs à maquiller. Ils peuvent indiquer qu’il faut améliorer les items, augmenter l’information ou reporter une conclusion.</p>
+</div>
+</div>
+</section>
+<section id="laboratoire" class="level2" data-number="3.8">
+<h2 data-number="3.8" class="anchored" data-anchor-id="laboratoire"><span class="header-section-number">3.8</span> Laboratoire</h2>
+<div class="callout callout-style-default callout-tip callout-titled" title="Dans simEFA">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Astuce</span>Dans simEFA
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Choisissez la situation <strong>Petit échantillon / structure fragile</strong> et générez trois échantillons avec les graines 1234, 1235 et 1236. Pour chacun, notez le nombre suggéré par l’analyse parallèle (AFE) et par la règle de Kaiser (vue ACP). Combien de facteurs la population contient-elle?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="Réponse">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Réponse
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>La population contient trois facteurs (onglet <strong>Population simulée</strong>). Les suggestions de l’analyse parallèle sont 3, 3, 4 et celles de la règle de Kaiser 3, 3, 4 pour les graines 1234, 1235 et 1236. Avec 100 personnes et des charges de 0,50, la troisième valeur propre se trouve près du seuil du hasard : selon l’échantillon, elle le franchit ou non. Une décision prise sur un seul échantillon fragile mérite d’être présentée comme provisoire.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="à-retenir" class="level2" data-number="3.9">
+<h2 data-number="3.9" class="anchored" data-anchor-id="à-retenir"><span class="header-section-number">3.9</span> À retenir</h2>
+<ul>
+<li>Une valeur propre mesure la variance résumée par une dimension; une structure se manifeste par quelques valeurs nettement plus grandes.</li>
+<li>L’analyse parallèle compare chaque valeur propre à ce que produirait le hasard avec le même <span class="math inline">\(n\)</span> et le même nombre d’items.</li>
+<li>La règle de Kaiser ignore la fluctuation d’échantillonnage; elle surestime le nombre de facteurs avec des questionnaires longs.</li>
+<li>Les solutions voisines se comparent par leur ajustement <strong>et</strong> par le nombre de facteurs bien définis.</li>
+<li>Un facteur peut refléter la méthode (formulation des items) plutôt qu’un construit.</li>
+</ul>
+</section>
+<section id="quiz" class="level2" data-number="3.10">
+<h2 data-number="3.10" class="anchored" data-anchor-id="quiz"><span class="header-section-number">3.10</span> Quiz</h2>
+<ol type="1">
+<li>Huit items indépendants : que valent, en population, les valeurs propres de leur matrice de corrélation complète?</li>
+<li>Que représente la courbe simulée de l’analyse parallèle?</li>
+<li>Pourquoi la règle de Kaiser retient-elle trop de facteurs avec 30 items et 200 personnes?</li>
+<li>Une solution à 4 facteurs a un meilleur RMSEA que la solution à 3, mais son quatrième facteur n’a qu’un item net. Que conclure?</li>
+<li>Que signale un second facteur qui regroupe exactement les items formulés négativement?</li>
+</ol>
+<div class="callout callout-style-default callout-note callout-titled" title="Réponses du quiz">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Réponses du quiz
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Toutes 1.</li>
+<li>Les valeurs propres moyennes de données aléatoires de même taille, sans aucun facteur commun.</li>
+<li>Les valeurs propres d’échantillon fluctuent autour de 1; avec beaucoup d’items et peu de personnes, plusieurs dépassent 1 par hasard.</li>
+<li>Le gain d’ajustement est réel mais attendu; un facteur défini par un seul item n’est pas interprétable. On retient 3 facteurs.</li>
+<li>Un probable facteur de méthode lié à la formulation, plutôt qu’un construit distinct.</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
+<div id="ref-horn1965" class="csl-entry" role="listitem">
+Horn, J. L. (1965). A Rationale and Test for the Number of Factors in Factor Analysis. <em>Psychometrika</em>, <em>30</em>(2), 179‑185. <a href="https://doi.org/10.1007/BF02289447">https://doi.org/10.1007/BF02289447</a>
+</div>
+<div id="ref-macCallum1999" class="csl-entry" role="listitem">
+MacCallum, R. C., Widaman, K. F., Zhang, S., &amp; Hong, S. (1999). Sample Size in Factor Analysis. <em>Psychological Methods</em>, <em>4</em>(1), 84‑99. <a href="https://doi.org/10.1037/1082-989X.4.1.84">https://doi.org/10.1037/1082-989X.4.1.84</a>
+</div>
+<div id="ref-zwick1986" class="csl-entry" role="listitem">
+Zwick, W. R., &amp; Velicer, W. F. (1986). Comparison of Five Rules for Determining the Number of Components to Retain. <em>Psychological Bulletin</em>, <em>99</em>(3), 432‑442. <a href="https://doi.org/10.1037/0033-2909.99.3.432">https://doi.org/10.1037/0033-2909.99.3.432</a>
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copié");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copié");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./02-preparer-donnees.html" class="pagination-link" aria-label="Préparer et examiner les données">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Préparer et examiner les données</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./04-extraire-tourner.html" class="pagination-link" aria-label="Extraire et tourner une solution">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Extraire et tourner une solution</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
